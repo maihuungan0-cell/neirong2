@@ -64,14 +64,33 @@ export default function App() {
 
   // Handlers
   const callDeepSeek = async (prompt: string) => {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
-    if (!response.ok) throw new Error("API call failed");
-    const data = await response.json();
-    return data.text;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `API Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.text;
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        throw new Error("生成超时，请重试。DeepSeek 响应较慢，或 Vercel 免费版超时限制（10秒）。");
+      }
+      throw err;
+    }
   };
 
   // Load history from localStorage
@@ -118,9 +137,9 @@ export default function App() {
         const cleanedText = text.replace(/[*#]/g, '').trim();
         setReferenceMaterials(prev => prev ? `${prev}\n\n实时动态：\n${cleanedText}` : cleanedText);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Fetch error:", err);
-      setError("抓取硬核信息失败，请重试。");
+      setError(err.message || "抓取硬核信息失败，请重试。");
     } finally {
       setIsFetchingRef(false);
     }
@@ -170,9 +189,9 @@ export default function App() {
         setResult(newResult);
         setHistory(prev => [newResult, ...prev].slice(0, 20));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Generation error:", err);
-      setError("生成内容失败，请检查网络或重试。");
+      setError(err.message || "生成内容失败，请检查网络或重试。");
     } finally {
       setIsGenerating(false);
     }
@@ -207,9 +226,9 @@ export default function App() {
         // Update history too
         setHistory(prev => prev.map(h => h.id === result.id ? updatedResult : h));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Refine error:", err);
-      setError("精修失败，请重试。");
+      setError(err.message || "精修失败，请重试。");
     } finally {
       setRefiningIndex(null);
     }

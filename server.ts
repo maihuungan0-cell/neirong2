@@ -24,9 +24,19 @@ const deepseek = new OpenAI({
 });
 
 // API Routes
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", time: new Date().toISOString() });
+});
+
 app.post("/api/generate", async (req, res) => {
   try {
     const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    console.log("Generating with prompt:", prompt.slice(0, 50) + "...");
+
     const response = await deepseek.chat.completions.create({
       model: "deepseek-chat",
       messages: [
@@ -34,12 +44,19 @@ app.post("/api/generate", async (req, res) => {
         { role: "user", content: prompt }
       ],
       temperature: 0.7,
+      max_tokens: 2000,
     });
+
+    if (!response.choices[0].message.content) {
+      throw new Error("Empty response from DeepSeek");
+    }
 
     res.json({ text: response.choices[0].message.content });
   } catch (error: any) {
     console.error("DeepSeek Error:", error);
-    res.status(500).json({ error: error.message });
+    const status = error.status || 500;
+    const message = error.message || "Internal Server Error";
+    res.status(status).json({ error: message, details: error.toString() });
   }
 });
 
@@ -75,6 +92,12 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Export for Vercel
+export default app;
+
+// Only listen if not in a serverless environment
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
