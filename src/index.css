@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Georgia", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+  }
+
+  .prose {
+    @apply max-w-none text-slate-600;
+  }
+
+  .prose h1, .prose h2, .prose h3 {
+    @apply text-indigo-600 font-bold uppercase tracking-tight mt-6 mb-3;
+  }
+
+  .prose p {
+    @apply text-base leading-relaxed mb-4;
+  }
+
+  .prose strong {
+    @apply text-slate-900 font-bold;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-indigo-200 pl-4 italic text-slate-500 my-6;
+  }
+
+  .prose ul {
+    @apply list-disc pl-5 space-y-1 mb-4;
+  }
+
+  .prose hr {
+    @apply border-slate-100 my-8;
+  }
+}
