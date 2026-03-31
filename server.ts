@@ -84,7 +84,9 @@ if (process.env.NODE_ENV !== "production") {
     appType: "spa",
   });
   app.use(vite.middlewares);
-} else {
+} else if (process.env.VERCEL !== "1") {
+  // Only serve static files manually if NOT on Vercel
+  // Vercel handles static serving natively from the 'dist' folder
   const distPath = path.join(process.cwd(), 'dist');
   app.use(express.static(distPath));
   app.get('*', (req, res) => {
