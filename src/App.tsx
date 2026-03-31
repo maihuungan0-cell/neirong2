@@ -79,7 +79,10 @@ export default function App() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `API Error: ${response.status}`);
+        const errorMessage = errorData.error || `API Error: ${response.status}`;
+        const errorDetails = errorData.details ? `\nDetails: ${errorData.details}` : "";
+        const errorHint = errorData.hint ? `\nHint: ${errorData.hint}` : "";
+        throw new Error(`${errorMessage}${errorDetails}${errorHint}`);
       }
       
       const data = await response.json();

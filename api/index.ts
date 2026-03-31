@@ -1,5 +1,4 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import OpenAI from "openai";
@@ -18,14 +17,28 @@ app.use(express.json());
 app.use(cors());
 
 // DeepSeek Client
-const deepseek = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY || "sk-f3f8f876b1e447cf9aa38de80f4dd8dd",
-  baseURL: "https://api.deepseek.com",
-});
+const getDeepSeekClient = () => {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
+    throw new Error("DEEPSEEK_API_KEY is not set in environment variables.");
+  }
+  return new OpenAI({
+    apiKey: apiKey,
+    baseURL: "https://api.deepseek.com",
+  });
+};
 
 // API Routes
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", time: new Date().toISOString() });
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  res.json({ 
+    status: "ok", 
+    time: new Date().toISOString(), 
+    env: process.env.NODE_ENV,
+    hasApiKey: !!apiKey,
+    keyPrefix: apiKey ? `${apiKey.slice(0, 3)}***` : "none",
+    vercel: process.env.VERCEL === "1"
+  });
 });
 
 app.post("/api/generate", async (req, res) => {
@@ -35,6 +48,7 @@ app.post("/api/generate", async (req, res) => {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
+    const deepseek = getDeepSeekClient();
     console.log("Generating with prompt:", prompt.slice(0, 50) + "...");
 
     const response = await deepseek.chat.completions.create({
@@ -56,13 +70,18 @@ app.post("/api/generate", async (req, res) => {
     console.error("DeepSeek Error:", error);
     const status = error.status || 500;
     const message = error.message || "Internal Server Error";
-    res.status(status).json({ error: message, details: error.toString() });
+    res.status(status).json({ 
+      error: message, 
+      details: error.toString(),
+      hint: "Please ensure DEEPSEEK_API_KEY is correctly set in Vercel environment variables."
+    });
   }
 });
 
 app.post("/api/search-keywords", async (req, res) => {
   try {
     const { query } = req.body;
+    const deepseek = getDeepSeekClient();
     const response = await deepseek.chat.completions.create({
       model: "deepseek-chat",
       messages: [
@@ -77,14 +96,16 @@ app.post("/api/search-keywords", async (req, res) => {
   }
 });
 
-// Vite middleware setup
-if (process.env.NODE_ENV !== "production") {
+// Vite middleware setup (Only for local development)
+if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
+  const { createServer: createViteServer } = await import("vite");
   const vite = await createViteServer({
     server: { middlewareMode: true },
     appType: "spa",
   });
   app.use(vite.middlewares);
-} else if (process.env.VERCEL !== "1") {
+}
+ else if (process.env.VERCEL !== "1") {
   // Only serve static files manually if NOT on Vercel
   // Vercel handles static serving natively from the 'dist' folder
   const distPath = path.join(process.cwd(), 'dist');
