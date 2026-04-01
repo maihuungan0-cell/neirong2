@@ -174,16 +174,19 @@ export default function App() {
    - **严禁使用任何 Emoji 表情符号。**
    - 严禁在正文中使用星号(*)或井号(#)作为纯装饰。保持排版清爽。
 4. 目标：每一篇都要具备极高的点击率和转化潜力。
-5. 格式：直接返回4篇文章，每篇之间用 "---ARTICLE_SPLIT---" 分隔。`;
+5. 格式：直接返回4篇文章，每篇之间用 [SPLIT] 分隔，不要对分隔符进行任何加粗或修饰。`;
 
       const text = await callDeepSeek(prompt);
 
       if (text) {
-        const articles = text.split("---ARTICLE_SPLIT---").map(a => a.trim()).filter(a => a.length > 0).slice(0, 4);
-        
-        // Ensure we have 4 if possible
-        while (articles.length < 4 && articles.length > 0) {
-          articles.push(articles[0]);
+        // Use a more robust regex to split, handling potential AI variations
+        const articles = text.split(/\[SPLIT\]|---ARTICLE_SPLIT---|\*\*ARTICLE_SPLIT\*\*|ARTICLE_SPLIT/i)
+          .map(a => a.trim())
+          .filter(a => a.length > 10) // Filter out very short fragments
+          .slice(0, 4);
+
+        if (articles.length === 0) {
+          throw new Error("AI 生成的内容格式不正确，未能识别出文章，请重试。");
         }
 
         const newResult: GenerationResult = {
@@ -408,7 +411,7 @@ export default function App() {
               className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Zap size={20} />}
-              {isGenerating ? "正在编织内容..." : "生成4篇爆款文案"}
+              {isGenerating ? "正在编织内容..." : "生成爆款文案"}
             </button>
             {error && <p className="text-red-500 text-[10px] text-center font-bold uppercase">{error}</p>}
           </section>
@@ -420,7 +423,7 @@ export default function App() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-indigo-600">
                     <Layout size={18} />
-                    <h2 className="text-sm font-bold uppercase tracking-wider">生成成果 (4个版本)</h2>
+                    <h2 className="text-sm font-bold uppercase tracking-wider">生成成果 ({result.articles.length}个版本)</h2>
                   </div>
                   <button onClick={() => generateContent(true)} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors" title="重新生成全部">
                     <RefreshCw size={18} />
