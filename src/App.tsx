@@ -137,8 +137,7 @@ export default function App() {
 - 保持内容精炼、真实。`);
 
       if (text) {
-        const cleanedText = text.replace(/[*#]/g, '').trim();
-        setReferenceMaterials(prev => prev ? `${prev}\n\n实时动态：\n${cleanedText}` : cleanedText);
+        setReferenceMaterials(prev => prev ? `${prev}\n\n实时动态：\n${text.trim()}` : text.trim());
       }
     } catch (err: any) {
       console.error("Fetch error:", err);
@@ -167,8 +166,13 @@ export default function App() {
 
 要求：
 1. 风格多样化：包括但不限于“干货分享型”、“情感共鸣型”、“悬念反转型”、“利益诱导型”。
-2. 结构清晰：每篇文案必须包含一个极其吸睛的标题，标题必须加粗（使用Markdown语法，如 **标题内容**），正文逻辑分明，并配有相关的Emoji。
-3. 严禁事项：严禁在正文中使用星号(*)或井号(#)作为纯装饰。保持排版清爽。
+2. 结构清晰：
+   - 每篇文案必须包含一个极其吸睛的标题，标题必须加粗（使用Markdown语法，如 **标题内容**）。
+   - **标题与正文之间必须使用两个换行符（空行）分隔，严禁连在一起。**
+   - **正文必须分段落，多个观点或段落之间必须使用两个换行符（空行）分隔，确保结构清晰易读。**
+3. **严禁事项：**
+   - **严禁使用任何 Emoji 表情符号。**
+   - 严禁在正文中使用星号(*)或井号(#)作为纯装饰。保持排版清爽。
 4. 目标：每一篇都要具备极高的点击率和转化潜力。
 5. 格式：直接返回4篇文章，每篇之间用 "---ARTICLE_SPLIT---" 分隔。`;
 
@@ -214,16 +218,20 @@ export default function App() {
 要求：
 1. 风格：${selectedStyle}
 2. 篇幅：${selectedLength}
-3. 格式：标题必须加粗（使用Markdown语法，如 **标题内容**），并直接返回改写后的全文。
-4. 严禁事项：严禁在正文中使用星号(*)或井号(#)作为纯装饰。保持排版清爽。
+3. 结构与格式：
+   - 标题必须加粗（使用Markdown语法，如 **标题内容**）。
+   - **标题与正文之间必须使用两个换行符（空行）分隔，严禁连在一起。**
+   - **正文必须分段落，多个观点或段落之间必须使用两个换行符（空行）分隔，确保结构清晰易读。**
+4. **严禁事项：**
+   - **严禁使用任何 Emoji 表情符号。**
+   - 严禁在正文中使用星号(*)或井号(#)作为纯装饰。保持排版清爽。
 5. 目标：在保留核心信息的基础上，完全按照“${selectedStyle}”的风格和“${selectedLength}”的篇幅进行重塑。`;
 
       const text = await callDeepSeek(prompt);
 
       if (text) {
-        const cleanedText = text.replace(/[*#]/g, '').trim();
         const newArticles = [...result.articles];
-        newArticles[index] = cleanedText;
+        newArticles[index] = text.trim();
         const updatedResult = { ...result, articles: newArticles };
         setResult(updatedResult);
         // Update history too
