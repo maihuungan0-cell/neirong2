@@ -40,7 +40,7 @@ app.get("/api/health", (req, res) => {
     hasApiKey: !!apiKey,
     keyPrefix: apiKey ? `${apiKey.slice(0, 7)}***` : "none",
     baseUrl: "https://vip.aipro.love/v1",
-    models: ["gemini-1.5-flash", "gemini-1.5-pro", "gpt-4o-mini"],
+    models: ["gemini-3.1-pro-high", "gemini-3.1-pro-low", "gemini-3.1-pro-preview", "gemini-1.5-flash", "gemini-1.5-pro", "gpt-4o-mini", "gpt-4o", "deepseek-chat", "gpt-3.5-turbo"],
     strategy: "fallback",
     vercel: process.env.VERCEL === "1",
     note: "Using fallback strategy to handle 503 errors from proxy"
@@ -56,8 +56,18 @@ app.post("/api/generate", async (req, res) => {
 
     const ai = getAIClient();
     
-    // Try models in order of preference
-    const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gpt-4o-mini"];
+    // Try models in order of preference - updated with Gemini 3.1 models
+    const models = [
+      "gemini-3.1-pro-high",
+      "gemini-3.1-pro-low",
+      "gemini-3.1-pro-preview",
+      "gemini-1.5-flash", 
+      "gemini-1.5-pro", 
+      "gpt-4o-mini", 
+      "gpt-4o",
+      "deepseek-chat",
+      "gpt-3.5-turbo"
+    ];
     let lastError = null;
 
     for (const model of models) {
@@ -105,7 +115,7 @@ app.post("/api/search-keywords", async (req, res) => {
     const { query } = req.body;
     const ai = getAIClient();
     const response = await ai.chat.completions.create({
-      model: "gemini-1.5-flash",
+      model: "gemini-3.1-pro-low",
       messages: [
         { role: "system", content: "你是一个关键词提取专家。" },
         { role: "user", content: `请为以下主题提取3个极其精简的英文搜索关键词（用于图库搜索）："${query}"。仅返回关键词，用空格分隔。` }
