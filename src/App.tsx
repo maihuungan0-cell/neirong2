@@ -286,34 +286,41 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-700">
+    <div className="min-h-screen bg-[#fcfcfd] text-slate-700 font-sans selection:bg-indigo-50 selection:text-indigo-600 relative overflow-hidden">
+      {/* Background Glows */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-100/30 blur-[120px] rounded-full" />
+        <div className="absolute top-[20%] -right-[5%] w-[30%] h-[30%] bg-purple-100/20 blur-[100px] rounded-full" />
+        <div className="absolute -bottom-[10%] left-[20%] w-[35%] h-[35%] bg-blue-100/20 blur-[120px] rounded-full" />
+      </div>
+
       {/* Header - Indigo Theme */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-b border-slate-100 px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+          <div className="w-10 h-10 bg-indigo-500/90 rounded-xl flex items-center justify-center text-white shadow-sm shadow-indigo-100">
             <Sparkles size={22} />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">爆款推文生成器</h1>
+            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">爆款推文生成器</h1>
             <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">TrendWeaver AI Engine</p>
           </div>
         </div>
         <nav className="flex gap-6 items-center">
-          <div className="bg-slate-100 p-1 rounded-lg flex gap-1">
+          <div className="bg-slate-50/80 p-1 rounded-lg flex gap-1 border border-slate-100">
             <button 
               onClick={() => setMode("generate")} 
-              className={cn("px-4 py-1.5 text-xs font-bold rounded-md transition-all", mode === "generate" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700")}
+              className={cn("px-4 py-1.5 text-xs font-bold rounded-md transition-all", mode === "generate" ? "bg-white text-indigo-500 shadow-sm border border-slate-50" : "text-slate-400 hover:text-slate-600")}
             >
               内容创作
             </button>
             <button 
               onClick={() => setMode("rewrite")} 
-              className={cn("px-4 py-1.5 text-xs font-bold rounded-md transition-all", mode === "rewrite" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700")}
+              className={cn("px-4 py-1.5 text-xs font-bold rounded-md transition-all", mode === "rewrite" ? "bg-white text-indigo-500 shadow-sm border border-slate-50" : "text-slate-400 hover:text-slate-600")}
             >
               文章改写
             </button>
           </div>
-          <button onClick={() => setShowHistory(true)} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+          <button onClick={() => setShowHistory(true)} className="p-2 text-slate-300 hover:text-indigo-500 transition-colors">
             <HistoryIcon size={20} />
           </button>
         </nav>
@@ -322,9 +329,9 @@ export default function App() {
       <main className="pt-24 pb-12 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left Column: Input & Results (8 cols) */}
         <div className="lg:col-span-8 space-y-8">
-          <section className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <section className="bg-white/70 backdrop-blur-sm rounded-2xl border border-slate-100 p-6 shadow-sm space-y-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-indigo-600">
+              <div className="flex items-center gap-2 text-indigo-500/80">
                 <FileText size={18} />
                 <h2 className="text-sm font-bold uppercase tracking-wider">核心输入</h2>
               </div>
@@ -337,7 +344,7 @@ export default function App() {
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="输入一个吸睛的标题或主题..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-lg font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-300"
+                      className="w-full bg-slate-50/50 border border-slate-100 rounded-xl px-4 py-3 text-lg font-medium focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-200 outline-none transition-all placeholder:text-slate-300"
                     />
                   </motion.div>
                 ) : (
@@ -346,7 +353,7 @@ export default function App() {
                       value={sourceText}
                       onChange={(e) => setSourceText(e.target.value)}
                       placeholder="粘贴需要改写的文案素材..."
-                      className="w-full h-40 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none placeholder:text-slate-300"
+                      className="w-full h-40 bg-slate-50/50 border border-slate-100 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-200 outline-none transition-all resize-none placeholder:text-slate-300"
                     />
                   </motion.div>
                 )}
@@ -355,14 +362,14 @@ export default function App() {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-indigo-600">
+                <div className="flex items-center gap-2 text-indigo-500/80">
                   <TrendingUp size={18} />
                   <h2 className="text-sm font-bold uppercase tracking-wider">实时参考资料</h2>
                 </div>
                 <button
                   onClick={fetchHardcoreInfo}
                   disabled={isFetchingRef}
-                  className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors disabled:opacity-30"
+                  className="text-[10px] font-bold text-indigo-400 hover:text-indigo-600 flex items-center gap-1 transition-colors disabled:opacity-30"
                 >
                   {isFetchingRef ? <Loader2 className="animate-spin" size={12} /> : <RefreshCw size={12} />}
                   抓取最新动态
@@ -372,35 +379,35 @@ export default function App() {
                 value={referenceMaterials}
                 onChange={(e) => setReferenceMaterials(e.target.value)}
                 placeholder="自动抓取或手动输入更新日志、热点词..."
-                className="w-full h-48 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none placeholder:text-slate-300"
+                className="w-full h-48 bg-slate-50/50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-200 outline-none transition-all resize-none placeholder:text-slate-300"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">默认文风</label>
+                <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">默认文风</label>
                 <div className="relative">
                   <select 
                     value={selectedStyle}
                     onChange={(e) => setSelectedStyle(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none transition-all"
+                    className="w-full bg-slate-50/50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-indigo-400/30 outline-none appearance-none transition-all"
                   >
                     {STYLES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
+                  <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-slate-300 pointer-events-none" />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">默认篇幅</label>
+                <label className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">默认篇幅</label>
                 <div className="relative">
                   <select 
                     value={selectedLength}
                     onChange={(e) => setSelectedLength(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none transition-all"
+                    className="w-full bg-slate-50/50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-indigo-400/30 outline-none appearance-none transition-all"
                   >
                     {LENGTHS.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
-                  <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
+                  <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-slate-300 pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -408,7 +415,7 @@ export default function App() {
             <button
               onClick={() => generateContent()}
               disabled={isGenerating}
-              className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-4 bg-indigo-500/90 text-white rounded-xl font-bold text-lg shadow-sm shadow-indigo-100 hover:bg-indigo-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Zap size={20} />}
               {isGenerating ? "正在编织内容..." : "生成爆款文案"}
@@ -421,11 +428,11 @@ export default function App() {
             {result && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-indigo-600">
+                  <div className="flex items-center gap-2 text-indigo-500/80">
                     <Layout size={18} />
                     <h2 className="text-sm font-bold uppercase tracking-wider">生成成果 ({result.articles.length}个版本)</h2>
                   </div>
-                  <button onClick={() => generateContent(true)} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors" title="重新生成全部">
+                  <button onClick={() => generateContent(true)} className="p-2 text-slate-300 hover:text-indigo-500 transition-colors" title="重新生成全部">
                     <RefreshCw size={18} />
                   </button>
                 </div>
@@ -437,22 +444,22 @@ export default function App() {
                       initial={{ opacity: 0, y: 20 }} 
                       animate={{ opacity: 1, y: 0 }} 
                       transition={{ delay: idx * 0.1 }}
-                      className="group bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all flex flex-col min-h-[400px] relative overflow-hidden"
+                      className="group bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col min-h-[400px] relative overflow-hidden"
                     >
-                      <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute top-0 left-0 w-1 h-full bg-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                       
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md uppercase tracking-wider">Version {idx + 1}</span>
-                          <span className="text-[10px] text-slate-400 font-medium">{article.length} 字</span>
+                          <span className="text-[10px] font-black text-indigo-400 bg-indigo-50/50 px-2 py-1 rounded-md uppercase tracking-wider">Version {idx + 1}</span>
+                          <span className="text-[10px] text-slate-300 font-medium">{article.length} 字</span>
                         </div>
                         <div className="flex gap-1">
                           <button 
                             onClick={() => copyToClipboard(article, idx)}
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                            className="p-2 text-slate-300 hover:text-indigo-400 hover:bg-indigo-50/50 rounded-lg transition-all"
                             title="复制内容"
                           >
-                            {copiedIndex === idx ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                            {copiedIndex === idx ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                           </button>
                         </div>
                       </div>

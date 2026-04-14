@@ -16,27 +16,25 @@ const PORT = 3000;
 app.use(express.json());
 app.use(cors());
 
-// DeepSeek Client
-const getDeepSeekClient = () => {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) {
-    throw new Error("DEEPSEEK_API_KEY is not set in environment variables.");
-  }
+// Gemini/OpenAI Compatible Client
+const getAIClient = () => {
+  const apiKey = process.env.GEMINI_API_KEY || "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
   return new OpenAI({
     apiKey: apiKey,
-    baseURL: "https://api.deepseek.com",
+    baseURL: "https://vip.aipro.love/v1",
   });
 };
 
 // API Routes
 app.get("/api/health", (req, res) => {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
   res.json({ 
     status: "ok", 
     time: new Date().toISOString(), 
     env: process.env.NODE_ENV,
     hasApiKey: !!apiKey,
     keyPrefix: apiKey ? `${apiKey.slice(0, 3)}***` : "none",
+    model: "gemini-1.5-pro",
     vercel: process.env.VERCEL === "1"
   });
 });
@@ -48,32 +46,30 @@ app.post("/api/generate", async (req, res) => {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
-    const deepseek = getDeepSeekClient();
-    console.log("Generating with prompt:", prompt.slice(0, 50) + "...");
+    const ai = getAIClient();
+    console.log("Generating with Gemini...");
 
-    const response = await deepseek.chat.completions.create({
-      model: "deepseek-chat",
+    const response = await ai.chat.completions.create({
+      model: "gemini-1.5-pro",
       messages: [
         { role: "system", content: "你是一位顶级的小红书/抖音爆款文案专家。" },
         { role: "user", content: prompt }
       ],
       temperature: 0.7,
-      max_tokens: 2000,
     });
 
     if (!response.choices[0].message.content) {
-      throw new Error("Empty response from DeepSeek");
+      throw new Error("Empty response from AI");
     }
 
     res.json({ text: response.choices[0].message.content });
   } catch (error: any) {
-    console.error("DeepSeek Error:", error);
+    console.error("AI Error:", error);
     const status = error.status || 500;
     const message = error.message || "Internal Server Error";
     res.status(status).json({ 
       error: message, 
-      details: error.toString(),
-      hint: "Please ensure DEEPSEEK_API_KEY is correctly set in Vercel environment variables."
+      details: error.toString()
     });
   }
 });
@@ -81,9 +77,9 @@ app.post("/api/generate", async (req, res) => {
 app.post("/api/search-keywords", async (req, res) => {
   try {
     const { query } = req.body;
-    const deepseek = getDeepSeekClient();
-    const response = await deepseek.chat.completions.create({
-      model: "deepseek-chat",
+    const ai = getAIClient();
+    const response = await ai.chat.completions.create({
+      model: "gemini-1.5-flash",
       messages: [
         { role: "system", content: "你是一个关键词提取专家。" },
         { role: "user", content: `请为以下主题提取3个极其精简的英文搜索关键词（用于图库搜索）："${query}"。仅返回关键词，用空格分隔。` }
