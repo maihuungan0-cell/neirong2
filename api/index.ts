@@ -18,22 +18,35 @@ app.use(cors());
 
 // Gemini/OpenAI Compatible Client
 const getAIClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY || "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
+  // Use the provided key as the primary source, but allow environment override if it's a real key
+  const hardcodedKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
+  const envKey = process.env.GEMINI_API_KEY;
+  
+  // If envKey exists and doesn't look like a placeholder, use it. Otherwise use hardcoded.
+  const apiKey = (envKey && envKey.startsWith("sk-") && envKey.length > 10) ? envKey : hardcodedKey;
+  
+  console.log(`Using API Key prefix: ${apiKey.slice(0, 7)}...`);
+  
   return new OpenAI({
-    apiKey: apiKey,
+    apiKey: apiKey.trim(),
     baseURL: "https://vip.aipro.love/v1",
   });
 };
 
 // API Routes
 app.get("/api/health", (req, res) => {
-  const apiKey = process.env.GEMINI_API_KEY || "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
+  const hardcodedKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
+  const envKey = process.env.GEMINI_API_KEY;
+  const apiKey = (envKey && envKey.startsWith("sk-") && envKey.length > 10) ? envKey : hardcodedKey;
+  
   res.json({ 
     status: "ok", 
     time: new Date().toISOString(), 
     env: process.env.NODE_ENV,
     hasApiKey: !!apiKey,
-    keyPrefix: apiKey ? `${apiKey.slice(0, 3)}***` : "none",
+    keyPrefix: apiKey ? `${apiKey.slice(0, 7)}***` : "none",
+    usingEnvKey: !!(envKey && envKey.startsWith("sk-") && envKey.length > 10),
+    baseUrl: "https://vip.aipro.love/v1",
     model: "gemini-1.5-pro",
     vercel: process.env.VERCEL === "1"
   });
@@ -64,12 +77,13 @@ app.post("/api/generate", async (req, res) => {
 
     res.json({ text: response.choices[0].message.content });
   } catch (error: any) {
-    console.error("AI Error:", error);
+    console.error("AI Error Details:", JSON.stringify(error, null, 2));
     const status = error.status || 500;
     const message = error.message || "Internal Server Error";
     res.status(status).json({ 
       error: message, 
-      details: error.toString()
+      details: error.toString(),
+      requestId: error.headers?.['request-id'] || error.headers?.['x-request-id'] || 'unknown'
     });
   }
 });
