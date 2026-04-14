@@ -19,7 +19,7 @@ app.use(cors());
 // Gemini/OpenAI Compatible Client
 const getAIClient = () => {
   // Force the provided key to ensure it's being used correctly
-  const apiKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
+  const apiKey = "sk-jkHCKxMTpWnWMh5xDOBhKvWqI1rTBjFA2Aq9u3psyynQOm6f";
   
   console.log(`[AI] Initializing client with key: ${apiKey.slice(0, 7)}...`);
   
@@ -31,7 +31,7 @@ const getAIClient = () => {
 
 // API Routes
 app.get("/api/health", (req, res) => {
-  const apiKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
+  const apiKey = "sk-jkHCKxMTpWnWMh5xDOBhKvWqI1rTBjFA2Aq9u3psyynQOm6f";
   
   res.json({ 
     status: "ok", 
