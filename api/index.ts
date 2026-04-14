@@ -40,9 +40,10 @@ app.get("/api/health", (req, res) => {
     hasApiKey: !!apiKey,
     keyPrefix: apiKey ? `${apiKey.slice(0, 7)}***` : "none",
     baseUrl: "https://vip.aipro.love/v1",
-    model: "gemini-1.5-pro",
+    models: ["gemini-1.5-flash", "gemini-1.5-pro", "gpt-4o-mini"],
+    strategy: "fallback",
     vercel: process.env.VERCEL === "1",
-    note: "Forcing hardcoded key to resolve 401 issues"
+    note: "Using fallback strategy to handle 503 errors from proxy"
   });
 });
 
@@ -54,22 +55,39 @@ app.post("/api/generate", async (req, res) => {
     }
 
     const ai = getAIClient();
-    console.log("Generating with Gemini...");
+    
+    // Try models in order of preference
+    const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gpt-4o-mini"];
+    let lastError = null;
 
-    const response = await ai.chat.completions.create({
-      model: "gemini-1.5-pro",
-      messages: [
-        { role: "system", content: "你是一位顶级的小红书/抖音爆款文案专家。" },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.7,
-    });
+    for (const model of models) {
+      try {
+        console.log(`[AI] Attempting generation with model: ${model}`);
+        const response = await ai.chat.completions.create({
+          model: model,
+          messages: [
+            { role: "system", content: "你是一位顶级的小红书/抖音爆款文案专家。" },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.7,
+        });
 
-    if (!response.choices[0].message.content) {
-      throw new Error("Empty response from AI");
+        if (response.choices[0].message.content) {
+          console.log(`[AI] Success with model: ${model}`);
+          return res.json({ text: response.choices[0].message.content, modelUsed: model });
+        }
+      } catch (error: any) {
+        console.error(`[AI] Failed with model ${model}:`, error.message);
+        lastError = error;
+        // If it's a 401, don't bother retrying other models as it's a key issue
+        if (error.status === 401) break;
+        // Continue to next model for 503 or other transient errors
+      }
     }
 
-    res.json({ text: response.choices[0].message.content });
+    // If we get here, all models failed
+    throw lastError || new Error("All models failed to generate a response");
+
   } catch (error: any) {
     console.error("AI Error Details:", JSON.stringify(error, null, 2));
     const status = error.status || 500;
