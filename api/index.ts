@@ -18,14 +18,10 @@ app.use(cors());
 
 // Gemini/OpenAI Compatible Client
 const getAIClient = () => {
-  // Use the provided key as the primary source, but allow environment override if it's a real key
-  const hardcodedKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
-  const envKey = process.env.GEMINI_API_KEY;
+  // Force the provided key to ensure it's being used correctly
+  const apiKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
   
-  // If envKey exists and doesn't look like a placeholder, use it. Otherwise use hardcoded.
-  const apiKey = (envKey && envKey.startsWith("sk-") && envKey.length > 10) ? envKey : hardcodedKey;
-  
-  console.log(`Using API Key prefix: ${apiKey.slice(0, 7)}...`);
+  console.log(`[AI] Initializing client with key: ${apiKey.slice(0, 7)}...`);
   
   return new OpenAI({
     apiKey: apiKey.trim(),
@@ -35,9 +31,7 @@ const getAIClient = () => {
 
 // API Routes
 app.get("/api/health", (req, res) => {
-  const hardcodedKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
-  const envKey = process.env.GEMINI_API_KEY;
-  const apiKey = (envKey && envKey.startsWith("sk-") && envKey.length > 10) ? envKey : hardcodedKey;
+  const apiKey = "sk-63c3abfc29f44bb4871c6cc4c4b0988f";
   
   res.json({ 
     status: "ok", 
@@ -45,10 +39,10 @@ app.get("/api/health", (req, res) => {
     env: process.env.NODE_ENV,
     hasApiKey: !!apiKey,
     keyPrefix: apiKey ? `${apiKey.slice(0, 7)}***` : "none",
-    usingEnvKey: !!(envKey && envKey.startsWith("sk-") && envKey.length > 10),
     baseUrl: "https://vip.aipro.love/v1",
     model: "gemini-1.5-pro",
-    vercel: process.env.VERCEL === "1"
+    vercel: process.env.VERCEL === "1",
+    note: "Forcing hardcoded key to resolve 401 issues"
   });
 });
 
