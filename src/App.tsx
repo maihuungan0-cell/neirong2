@@ -90,7 +90,7 @@ export default function App() {
     } catch (err: any) {
       clearTimeout(timeoutId);
       if (err.name === 'AbortError') {
-        throw new Error("生成超时，请重试。AI 响应较慢，或 Vercel 免费版超时限制（10秒）。");
+        throw new Error("生成超时，请重试。AI 响应较慢或网络不稳定。建议缩短输入内容或稍后重试。");
       }
       throw err;
     }

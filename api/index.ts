@@ -40,10 +40,10 @@ app.get("/api/health", (req, res) => {
     hasApiKey: !!apiKey,
     keyPrefix: apiKey ? `${apiKey.slice(0, 7)}***` : "none",
     baseUrl: "https://vip.aipro.love/v1",
-    models: ["gemini-3.1-pro-high", "gemini-3.1-pro-low", "gemini-3.1-pro-preview", "gemini-1.5-flash", "gemini-1.5-pro", "gpt-4o-mini", "gpt-4o", "deepseek-chat", "gpt-3.5-turbo"],
-    strategy: "fallback",
+    models: ["gemini-3.1-pro-high", "gemini-3.1-pro-low", "gemini-1.5-flash", "gpt-4o-mini", "deepseek-chat"],
+    strategy: "optimized-fallback",
     vercel: process.env.VERCEL === "1",
-    note: "Using fallback strategy to handle 503 errors from proxy"
+    note: "Using optimized fallback with 20s per-model timeout"
   });
 });
 
@@ -56,17 +56,11 @@ app.post("/api/generate", async (req, res) => {
 
     const ai = getAIClient();
     
-    // Try models in order of preference - updated with Gemini 3.1 models
+    // Try models in order of preference - further reduced for maximum speed
     const models = [
       "gemini-3.1-pro-high",
-      "gemini-3.1-pro-low",
-      "gemini-3.1-pro-preview",
       "gemini-1.5-flash", 
-      "gemini-1.5-pro", 
-      "gpt-4o-mini", 
-      "gpt-4o",
-      "deepseek-chat",
-      "gpt-3.5-turbo"
+      "gpt-4o-mini"
     ];
     let lastError = null;
 
@@ -80,6 +74,8 @@ app.post("/api/generate", async (req, res) => {
             { role: "user", content: prompt }
           ],
           temperature: 0.7,
+        }, {
+          timeout: 20000, // 20s timeout per model
         });
 
         if (response.choices[0].message.content) {
@@ -120,6 +116,8 @@ app.post("/api/search-keywords", async (req, res) => {
         { role: "system", content: "你是一个关键词提取专家。" },
         { role: "user", content: `请为以下主题提取3个极其精简的英文搜索关键词（用于图库搜索）："${query}"。仅返回关键词，用空格分隔。` }
       ],
+    }, {
+      timeout: 15000, // 15s timeout for keywords
     });
 
     res.json({ text: response.choices[0].message.content });
