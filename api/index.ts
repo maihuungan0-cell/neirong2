@@ -16,28 +16,28 @@ const PORT = 3000;
 app.use(express.json());
 app.use(cors());
 
-// DeepSeek Client
-const getDeepSeekClient = () => {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+// Zhipu AI Client (OpenAI Compatible)
+const getZhipuClient = () => {
+  const apiKey = process.env.ZHIPUAI_API_KEY;
   if (!apiKey) {
-    throw new Error("DEEPSEEK_API_KEY is not set in environment variables.");
+    throw new Error("ZHIPUAI_API_KEY is not set in environment variables.");
   }
   return new OpenAI({
     apiKey: apiKey,
-    baseURL: "https://api.deepseek.com",
+    baseURL: "https://open.bigmodel.cn/api/paas/v4/",
   });
 };
 
 // API Routes
 app.get("/api/health", (req, res) => {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+  const apiKey = process.env.ZHIPUAI_API_KEY;
   res.json({ 
     status: "ok", 
     time: new Date().toISOString(), 
     env: process.env.NODE_ENV,
     hasApiKey: !!apiKey,
     keyPrefix: apiKey ? `${apiKey.slice(0, 3)}***` : "none",
-    vercel: process.env.VERCEL === "1"
+    model: "glm-5.1" // Latest flagship model
   });
 });
 
@@ -48,32 +48,36 @@ app.post("/api/generate", async (req, res) => {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
-    const deepseek = getDeepSeekClient();
-    console.log("Generating with prompt:", prompt.slice(0, 50) + "...");
+    const zhipu = getZhipuClient();
+    console.log("Generating with Zhipu AI (GLM-5.1), prompt:", prompt.slice(0, 50) + "...");
 
-    const response = await deepseek.chat.completions.create({
-      model: "deepseek-chat",
+    const response = await zhipu.chat.completions.create({
+      model: "glm-5.1", 
       messages: [
-        { role: "system", content: "你是一位顶级的小红书/抖音爆款文案专家。" },
+        { role: "system", content: "你是一位顶级的小红书/抖音爆款文案专家，擅长创作高吸引力和转化率的内容。" },
         { role: "user", content: prompt }
       ],
-      temperature: 0.7,
-      max_tokens: 2000,
+      // @ts-ignore - 'thinking' is a specific feature of GLM-5.1
+      thinking: {
+        type: "enabled",
+      },
+      temperature: 1.0,
+      max_tokens: 32768, 
     });
 
     if (!response.choices[0].message.content) {
-      throw new Error("Empty response from DeepSeek");
+      throw new Error("Empty response from Zhipu AI");
     }
 
     res.json({ text: response.choices[0].message.content });
   } catch (error: any) {
-    console.error("DeepSeek Error:", error);
+    console.error("Zhipu AI Error:", error);
     const status = error.status || 500;
     const message = error.message || "Internal Server Error";
     res.status(status).json({ 
       error: message, 
       details: error.toString(),
-      hint: "Please ensure DEEPSEEK_API_KEY is correctly set in Vercel environment variables."
+      hint: "Please ensure ZHIPUAI_API_KEY is correctly set."
     });
   }
 });
@@ -81,9 +85,9 @@ app.post("/api/generate", async (req, res) => {
 app.post("/api/search-keywords", async (req, res) => {
   try {
     const { query } = req.body;
-    const deepseek = getDeepSeekClient();
-    const response = await deepseek.chat.completions.create({
-      model: "deepseek-chat",
+    const zhipu = getZhipuClient();
+    const response = await zhipu.chat.completions.create({
+      model: "glm-5-flash", // Use flash version of GLM-5 for quick keywords
       messages: [
         { role: "system", content: "你是一个关键词提取专家。" },
         { role: "user", content: `请为以下主题提取3个极其精简的英文搜索关键词（用于图库搜索）："${query}"。仅返回关键词，用空格分隔。` }

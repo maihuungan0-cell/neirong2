@@ -63,7 +63,7 @@ export default function App() {
   const [selectedLength, setSelectedLength] = useState(LENGTHS[1]);
 
   // Handlers
-  const callDeepSeek = async (prompt: string) => {
+  const callAI = async (prompt: string) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
@@ -90,7 +90,7 @@ export default function App() {
     } catch (err: any) {
       clearTimeout(timeoutId);
       if (err.name === 'AbortError') {
-        throw new Error("生成超时，请重试。DeepSeek 响应较慢，或 Vercel 免费版超时限制（10秒）。");
+        throw new Error("生成超时，请重试。智谱 AI 响应较慢或网络波动，请稍后再试。");
       }
       throw err;
     }
@@ -126,7 +126,7 @@ export default function App() {
     setError(null);
 
     try {
-      const text = await callDeepSeek(`针对主题/内容“${query}”，请搜索并提供以下“硬核信息”：
+      const text = await callAI(`针对主题/内容“${query}”，请搜索并提供以下“硬核信息”：
 1. 该应用/产品的最新更新日志（如果有）。
 2. 用户的高频评价或吐槽点。
 3. 当前在微博、小红书上的相关热点词或流行语。
@@ -176,7 +176,7 @@ export default function App() {
 4. 目标：每一篇都要具备极高的点击率和转化潜力。
 5. 格式：直接返回4篇文章，每篇之间用 [SPLIT] 分隔，不要对分隔符进行任何加粗或修饰。`;
 
-      const text = await callDeepSeek(prompt);
+      const text = await callAI(prompt);
 
       if (text) {
         // Use a more robust regex to split, handling potential AI variations
@@ -230,7 +230,7 @@ export default function App() {
    - 严禁在正文中使用星号(*)或井号(#)作为纯装饰。保持排版清爽。
 5. 目标：在保留核心信息的基础上，完全按照“${selectedStyle}”的风格和“${selectedLength}”的篇幅进行重塑。`;
 
-      const text = await callDeepSeek(prompt);
+      const text = await callAI(prompt);
 
       if (text) {
         const newArticles = [...result.articles];
