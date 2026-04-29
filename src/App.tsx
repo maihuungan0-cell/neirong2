@@ -65,7 +65,7 @@ export default function App() {
   // Handlers
   const callAI = async (prompt: string) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s timeout for GLM-5.1 Thinking mode
 
     try {
       const response = await fetch("/api/generate", {
